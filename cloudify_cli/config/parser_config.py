@@ -70,6 +70,18 @@ def workflow_id_argument(hlp):
     }
 
 
+def plugin_id_argument(hlp):
+    return {
+        'metavar': 'PLUGIN_ID',
+        'type': str,
+        'help': hlp,
+        'dest': 'plugin_id',
+        'default': None,
+        'required': True,
+        'completer': completion_utils.objects_args_completer_maker('plugins')
+    }
+
+
 def parser_config():
     return {
         'description': 'Manages Cloudify in different Cloud Environments',
@@ -80,6 +92,54 @@ def parser_config():
             }
         },
         'commands': {
+            'plugins': {
+                'help': "Manages Cloudify's plugins",
+                'sub_commands': {
+                    'upload': {
+                        'arguments': {
+                            '-p,--plugin-path': {
+                                'metavar': 'plugin_FILE',
+                                'dest': 'plugin_path',
+                                'type': argparse.FileType(),
+                                'required': True,
+                                'help': "Path to the plugin file",
+                                'completer': completion_utils.yaml_files_completer
+                            },
+                            '-id,--plugin-id': argument_utils.remove_completer(plugin_id_argument(hlp='The plugin id'))
+                        },
+                        'help': 'command for uploading a plugin to the management server',
+                        'handler': cfy.plugins.upload
+                    },
+                    'download': {
+                        'arguments': {
+                            '-id,--plugin-id': plugin_id_argument(
+                                hlp='The plugin id'),
+                            '-o,--output': {
+                                'metavar': 'OUTPUT',
+                                'type': str,
+                                'help': 'The output file path of the plugin to be downloaded',
+                                'dest': 'output',
+                                'required': False
+                            }
+                        },
+                        'help': 'command for downloading a plugin from the management server',
+                        'handler': cfy.plugins.download
+                    },
+                    'list': {
+                        'help': 'command for listing all plugins on the '
+                                'Manager',
+                        'handler': cfy.plugins.ls
+                    },
+                    'delete': {
+                        'arguments': {
+                            '-id,--plugin-id': plugin_id_argument(
+                                hlp='The plugin id')
+                        },
+                        'help': 'command for deleting a plugin',
+                        'handler': cfy.plugins.delete
+                    }
+                }
+            },
             'blueprints': {
                 'help': "Manages Cloudify's Blueprints",
                 'sub_commands': {
